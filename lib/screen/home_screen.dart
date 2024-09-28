@@ -440,7 +440,7 @@ class _HomeScreenState extends State<HomeScreen>
                             const Padding(
                               padding: EdgeInsets.only(bottom: 10),
                               child: Text(
-                                'Powered by Genderize API',
+                                'Created by Rensith Udara ❤️',
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.white70,

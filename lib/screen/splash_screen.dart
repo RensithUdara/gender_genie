@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'dart:math'; // For rotating animation
+
 import 'home_screen.dart'; // Import your HomeScreen
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
@@ -21,13 +23,13 @@ class _SplashScreenState extends State<SplashScreen>
     // Initialize AnimationController and Animations
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 3),
+      duration: const Duration(seconds: 3),
     );
 
     // Slide animations for the images
     _slideAnimationLeft = Tween<Offset>(
-      begin: Offset(-1.5, 0), // Slide from left
-      end: Offset(0, 0),
+      begin: const Offset(-1.5, 0), // Slide from left
+      end: const Offset(0, 0),
     ).animate(
       CurvedAnimation(
         parent: _animationController,
@@ -36,8 +38,8 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _slideAnimationRight = Tween<Offset>(
-      begin: Offset(1.5, 0), // Slide from right
-      end: Offset(0, 0),
+      begin: const Offset(1.5, 0), // Slide from right
+      end: const Offset(0, 0),
     ).animate(
       CurvedAnimation(
         parent: _animationController,
@@ -57,10 +59,10 @@ class _SplashScreenState extends State<SplashScreen>
     _animationController.forward();
 
     // Navigate to HomeScreen after a delay
-    Future.delayed(Duration(seconds: 4), () {
+    Future.delayed(const Duration(seconds: 4), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     });
   }
@@ -91,18 +93,18 @@ class _SplashScreenState extends State<SplashScreen>
                 children: [
                   // Logo at the top
                   ShaderMask(
-                    shaderCallback: (bounds) => LinearGradient(
+                    shaderCallback: (bounds) => const LinearGradient(
                       colors: [Colors.deepPurpleAccent, Colors.blueAccent],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ).createShader(bounds),
-                    child: Icon(
+                    child: const Icon(
                       Icons.person_search_rounded,
                       size: 150,
                       color: Colors.deepPurple, // Base color to apply gradient
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   // Animated images with slide and fade effect
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -117,12 +119,13 @@ class _SplashScreenState extends State<SplashScreen>
                             height: 100,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.blueAccent, width: 4),
+                              border: Border.all(
+                                  color: Colors.blueAccent, width: 4),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.blueAccent.withOpacity(0.5),
                                   blurRadius: 8,
-                                  offset: Offset(2, 4),
+                                  offset: const Offset(2, 4),
                                 ),
                               ],
                             ),
@@ -135,7 +138,7 @@ class _SplashScreenState extends State<SplashScreen>
                           ),
                         ),
                       ),
-                      SizedBox(width: 20),
+                      const SizedBox(width: 20),
                       // Animated Female Image (slides in from the right)
                       SlideTransition(
                         position: _slideAnimationRight,
@@ -146,12 +149,13 @@ class _SplashScreenState extends State<SplashScreen>
                             height: 100,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.pinkAccent, width: 4),
+                              border: Border.all(
+                                  color: Colors.pinkAccent, width: 4),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.pinkAccent.withOpacity(0.5),
                                   blurRadius: 8,
-                                  offset: Offset(2, 4),
+                                  offset: const Offset(2, 4),
                                 ),
                               ],
                             ),
@@ -166,7 +170,7 @@ class _SplashScreenState extends State<SplashScreen>
                       ),
                     ],
                   ),
-                  SizedBox(height: 40),
+                  const SizedBox(height: 40),
                   // Animated Gradient Text
                   AnimatedBuilder(
                     animation: _animationController,
@@ -174,19 +178,20 @@ class _SplashScreenState extends State<SplashScreen>
                       return Opacity(
                         opacity: _fadeAnimation.value,
                         child: ShaderMask(
-                          shaderCallback: (bounds) => LinearGradient(
+                          shaderCallback: (bounds) => const LinearGradient(
                             colors: [Colors.blueAccent, Colors.purpleAccent],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ).createShader(bounds),
                           child: Text(
-                            'Gender Predictor',
+                            'Gender Genie',
                             style: TextStyle(
                               fontSize: 36,
                               fontWeight: FontWeight.bold,
-                              color: Colors.blue.shade900, // Base color for gradient
+                              color: Colors
+                                  .blue.shade900, // Base color for gradient
                               letterSpacing: 2,
-                              shadows: [
+                              shadows: const [
                                 Shadow(
                                   color: Colors.black26,
                                   blurRadius: 4,
@@ -199,24 +204,25 @@ class _SplashScreenState extends State<SplashScreen>
                       );
                     },
                   ),
-                  SizedBox(height: 50),
+                  const SizedBox(height: 50),
                   // Fancy Gradient Animated Progress Indicator
-                  Container(
+                  SizedBox(
                     width: 60,
                     height: 60,
                     child: ShaderMask(
-                      shaderCallback: (bounds) => LinearGradient(
+                      shaderCallback: (bounds) => const LinearGradient(
                         colors: [Colors.blueAccent, Colors.teal],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ).createShader(bounds),
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurpleAccent),
+                      child: const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.deepPurpleAccent),
                         strokeWidth: 6.0,
                       ),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   // Animated "Please wait..." Gradient Text
                   AnimatedBuilder(
                     animation: _animationController,
@@ -224,15 +230,19 @@ class _SplashScreenState extends State<SplashScreen>
                       return Opacity(
                         opacity: _fadeAnimation.value,
                         child: ShaderMask(
-                          shaderCallback: (bounds) => LinearGradient(
-                            colors: [Colors.deepPurpleAccent, Colors.blueAccent],
+                          shaderCallback: (bounds) => const LinearGradient(
+                            colors: [
+                              Colors.deepPurpleAccent,
+                              Colors.blueAccent
+                            ],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                           ).createShader(bounds),
                           child: Text(
                             'Please wait...',
                             style: TextStyle(
-                              color: Colors.blue.shade900, // Base color for gradient
+                              color: Colors
+                                  .blue.shade900, // Base color for gradient
                               fontSize: 16,
                               fontWeight: FontWeight.w300,
                               letterSpacing: 1.2,
