@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
 class HomeScreen extends StatefulWidget {
-  HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -19,6 +20,7 @@ class _HomeScreenState extends State<HomeScreen>
   bool isLoading = false;
 
   late AnimationController _controller;
+  late Animation<double> _curvedAnimation;
 
   predictGender(String name) async {
     setState(() {
@@ -30,7 +32,9 @@ class _HomeScreenState extends State<HomeScreen>
     var body = json.decode(response.body);
 
     setState(() {
-      result = body['gender'] != null ? 'Gender: ${body['gender']}' : 'Gender could not be predicted';
+      result = body['gender'] != null
+          ? 'Gender: ${body['gender']}'
+          : 'Gender could not be predicted';
       imageResult = body['gender'] ?? 'both'; // Use 'both' to show both images
       isVisible = true;
       isLoading = false;
@@ -62,9 +66,16 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
+
     _controller = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
+    );
+
+    // Applying a different curve to your animation
+    _curvedAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
     );
   }
 
@@ -91,9 +102,9 @@ class _HomeScreenState extends State<HomeScreen>
             ),
             elevation: 10,
             shadowColor: Colors.teal.shade200,
-            title: Row(
+            title: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
+              children: [
                 Icon(
                   Icons.person_search_rounded,
                   color: Colors.white,
@@ -107,6 +118,7 @@ class _HomeScreenState extends State<HomeScreen>
                     fontSize: 22,
                     color: Colors.white,
                     letterSpacing: 1.2,
+                    fontFamily: 'Roboto',
                   ),
                 ),
               ],
@@ -142,6 +154,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 fontSize: 28,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.white,
+                                fontFamily: 'Roboto',
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -150,15 +163,17 @@ class _HomeScreenState extends State<HomeScreen>
                             Container(
                               padding: const EdgeInsets.symmetric(
                                   vertical: 8, horizontal: 20),
-                              margin: const EdgeInsets.symmetric(horizontal: 10),
+                              margin:
+                                  const EdgeInsets.symmetric(horizontal: 10),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.8),
-                                borderRadius: BorderRadius.circular(10),
-                                boxShadow: [
+                                color: Colors.white.withOpacity(0.9),
+                                borderRadius: BorderRadius.circular(15),
+                                boxShadow: const [
                                   BoxShadow(
-                                    color: Colors.black26,
-                                    blurRadius: 8,
-                                    offset: Offset(0, 4),
+                                    color: Colors.black12,
+                                    blurRadius: 12,
+                                    offset: Offset(
+                                        0, 6), // Controls shadow positioning
                                   ),
                                 ],
                               ),
@@ -168,17 +183,22 @@ class _HomeScreenState extends State<HomeScreen>
                                     child: TextField(
                                       controller: _nameController,
                                       maxLength: 15,
-                                      style: const TextStyle(color: Colors.black),
+                                      style:
+                                          const TextStyle(color: Colors.black),
                                       decoration: InputDecoration(
                                         border: InputBorder.none,
                                         counterText: '',
                                         hintText: 'Enter a name',
-                                        hintStyle: TextStyle(color: Colors.teal),
+                                        hintStyle: TextStyle(
+                                            color: Colors.grey.shade500),
+                                        prefixIcon: const Icon(Icons.person,
+                                            color: Colors.teal),
                                       ),
                                     ),
                                   ),
                                   IconButton(
-                                    icon: Icon(Icons.clear, color: Colors.teal.shade700),
+                                    icon: Icon(Icons.clear,
+                                        color: Colors.teal.shade700),
                                     onPressed: () {
                                       _nameController.clear();
                                       setState(() {
@@ -192,28 +212,34 @@ class _HomeScreenState extends State<HomeScreen>
                             ),
                             const SizedBox(height: 20),
                             ElevatedButton(
-                              onPressed: () => predictGender(_nameController.text),
+                              onPressed: () =>
+                                  predictGender(_nameController.text),
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.teal.shade700,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                      20), // More rounded corners
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 40, vertical: 16),
+                                elevation: 8, // Enhanced shadow effect
+                              ),
                               child: const Text(
                                 'Predict',
-                                style: TextStyle(fontSize: 18),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                primary: Colors.teal.shade700,
-                                onPrimary: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 40, vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.2,
                                 ),
-                                elevation: 5,
-                                shadowColor: Colors.teal.shade200,
                               ),
                             ),
                             const SizedBox(height: 30),
                             // Show loading indicator if fetching data
                             if (isLoading)
                               const CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
                               )
                             else
                               AnimatedOpacity(
@@ -222,71 +248,138 @@ class _HomeScreenState extends State<HomeScreen>
                                 child: _nameController.text.isEmpty
                                     ? const Text(
                                         'Please enter a name.',
-                                        style: TextStyle(fontSize: 16, color: Colors.red),
+                                        style: TextStyle(
+                                            fontSize: 16, color: Colors.red),
                                       )
-                                    : FadeTransition(
-                                        opacity: _controller,
-                                        child: Column(
-                                          children: [
-                                            Text(
-                                              result,
-                                              style: const TextStyle(
-                                                fontSize: 22,
-                                                fontWeight: FontWeight.w500,
-                                                color: Colors.white,
-                                              ),
+                                    : SlideTransition(
+                                        position: Tween<Offset>(
+                                          begin: const Offset(0, 1),
+                                          end: const Offset(0, 0),
+                                        ).animate(_curvedAnimation),
+                                        child: ScaleTransition(
+                                          scale: _curvedAnimation,
+                                          child: FadeTransition(
+                                            opacity: _curvedAnimation,
+                                            child: Column(
+                                              children: [
+                                                Text(
+                                                  result,
+                                                  style: const TextStyle(
+                                                    fontSize: 22,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Color.fromARGB(255, 4, 0, 255),
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 20),
+                                                if (imageResult == 'both')
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Container(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(4),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          shape:
+                                                              BoxShape.circle,
+                                                          border: Border.all(
+                                                            color: Colors
+                                                                .teal.shade700,
+                                                            width: 4,
+                                                          ),
+                                                        ),
+                                                        child: ClipOval(
+                                                          child: Image.asset(
+                                                            'assets/images/male.png',
+                                                            width: 100,
+                                                            height: 100,
+                                                            fit: BoxFit.cover,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 20),
+                                                      Container(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(4),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          shape:
+                                                              BoxShape.circle,
+                                                          border: Border.all(
+                                                            color: Colors
+                                                                .pinkAccent
+                                                                .shade200,
+                                                            width: 4,
+                                                          ),
+                                                        ),
+                                                        child: ClipOval(
+                                                          child: Image.asset(
+                                                            'assets/images/female.png',
+                                                            width: 100,
+                                                            height: 100,
+                                                            fit: BoxFit.cover,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  )
+                                                else if (imageResult == 'male')
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.all(4),
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      border: Border.all(
+                                                        color: Colors
+                                                            .teal.shade700,
+                                                        width: 4,
+                                                      ),
+                                                    ),
+                                                    child: ClipOval(
+                                                      child: Image.asset(
+                                                        'assets/images/male.png',
+                                                        width: 150,
+                                                        height: 150,
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    ),
+                                                  )
+                                                else if (imageResult ==
+                                                    'female')
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.all(4),
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      border: Border.all(
+                                                        color: Colors.pinkAccent
+                                                            .shade200,
+                                                        width: 4,
+                                                      ),
+                                                    ),
+                                                    child: ClipOval(
+                                                      child: Image.asset(
+                                                        'assets/images/female.png',
+                                                        width: 150,
+                                                        height: 150,
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    ),
+                                                  ),
+                                              ],
                                             ),
-                                            const SizedBox(height: 20),
-                                            // Show both images if gender is null
-                                            if (imageResult == 'both')
-                                              Row(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  SizedBox(
-                                                    height: 150,
-                                                    width: 150,
-                                                    child: Image.asset(
-                                                      'assets/images/male.png',
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 20),
-                                                  SizedBox(
-                                                    height: 150,
-                                                    width: 150,
-                                                    child: Image.asset(
-                                                      'assets/images/female.png',
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                                  ),
-                                                ],
-                                              )
-                                            else if (imageResult == 'male')
-                                              SizedBox(
-                                                height: 150,
-                                                width: 150,
-                                                child: Image.asset(
-                                                  'assets/images/male.png',
-                                                  fit: BoxFit.cover,
-                                                ),
-                                              )
-                                            else if (imageResult == 'female')
-                                              SizedBox(
-                                                height: 150,
-                                                width: 150,
-                                                child: Image.asset(
-                                                  'assets/images/female.png',
-                                                  fit: BoxFit.cover,
-                                                ),
-                                              ),
-                                          ],
+                                          ),
                                         ),
                                       ),
                               ),
                             const Spacer(),
                             // Footer Text or any additional information
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
+                            const Padding(
+                              padding: EdgeInsets.only(bottom: 10),
                               child: Text(
                                 'Powered by Genderize API',
                                 style: TextStyle(
