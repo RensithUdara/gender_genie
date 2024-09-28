@@ -2,6 +2,42 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart'; // Import provider package
+
+void main() {
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeNotifier(),
+      child: const MyApp(),
+    ),
+  );
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    return MaterialApp(
+      theme: themeNotifier.isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      home: const HomeScreen(),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
+// ThemeNotifier to manage theme state
+class ThemeNotifier extends ChangeNotifier {
+  bool _isDarkMode = false;
+
+  bool get isDarkMode => _isDarkMode;
+
+  void toggleTheme() {
+    _isDarkMode = !_isDarkMode;
+    notifyListeners();
+  }
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -42,8 +78,16 @@ class _HomeScreenState extends State<HomeScreen>
     });
   }
 
-  LinearGradient getGradient() {
-    if (imageResult == 'male') {
+  LinearGradient getGradient(BuildContext context) {
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    if (themeNotifier.isDarkMode) {
+      // Different gradient for dark mode
+      return LinearGradient(
+        colors: [Colors.grey.shade800, Colors.black87],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    } else if (imageResult == 'male') {
       return LinearGradient(
         colors: [Colors.lightBlueAccent, Colors.blueAccent.shade200],
         begin: Alignment.topLeft,
@@ -88,16 +132,18 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: themeNotifier.isDarkMode ? Colors.black : Colors.white,
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(70),
           child: AppBar(
             automaticallyImplyLeading: false,
             flexibleSpace: Container(
               decoration: BoxDecoration(
-                gradient: getGradient(),
+                gradient: getGradient(context),
               ),
             ),
             elevation: 10,
@@ -112,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
                 SizedBox(width: 10),
                 Text(
-                  'Gender Predictor',
+                  'Gender Genie',
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 22,
@@ -124,6 +170,17 @@ class _HomeScreenState extends State<HomeScreen>
               ],
             ),
             centerTitle: true,
+            actions: [
+              IconButton(
+                icon: Icon(
+                  themeNotifier.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  themeNotifier.toggleTheme();
+                },
+              ),
+            ],
           ),
         ),
         body: Stack(
@@ -131,7 +188,7 @@ class _HomeScreenState extends State<HomeScreen>
             // Background Gradient
             Container(
               decoration: BoxDecoration(
-                gradient: getGradient(),
+                gradient: getGradient(context),
               ),
             ),
             Padding(
@@ -166,7 +223,9 @@ class _HomeScreenState extends State<HomeScreen>
                               margin:
                                   const EdgeInsets.symmetric(horizontal: 10),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.9),
+                                color: themeNotifier.isDarkMode
+                                    ? Colors.grey.shade800.withOpacity(0.8)
+                                    : Colors.white.withOpacity(0.9),
                                 borderRadius: BorderRadius.circular(15),
                                 boxShadow: const [
                                   BoxShadow(
@@ -267,7 +326,7 @@ class _HomeScreenState extends State<HomeScreen>
                                                   style: const TextStyle(
                                                     fontSize: 22,
                                                     fontWeight: FontWeight.w500,
-                                                    color: Color.fromARGB(255, 4, 0, 255),
+                                                    color: Colors.teal,
                                                   ),
                                                 ),
                                                 const SizedBox(height: 20),
