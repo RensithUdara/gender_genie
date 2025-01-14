@@ -15,6 +15,7 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<Offset> _slideAnimationLeft;
   late Animation<Offset> _slideAnimationRight;
   late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
@@ -55,6 +56,14 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
+    // Scale animation for the logo
+    _scaleAnimation = Tween<double>(begin: 0.5, end: 1).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
     // Start animation
     _animationController.forward();
 
@@ -82,7 +91,7 @@ class _SplashScreenState extends State<SplashScreen>
           return Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.teal.shade700, Colors.cyan.shade400],
+                colors: [Colors.teal.shade100, Colors.cyan.shade100],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -91,17 +100,20 @@ class _SplashScreenState extends State<SplashScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo at the top
-                  ShaderMask(
-                    shaderCallback: (bounds) => const LinearGradient(
-                      colors: [Colors.deepPurpleAccent, Colors.blueAccent],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ).createShader(bounds),
-                    child: const Icon(
-                      Icons.person_search_rounded,
-                      size: 150,
-                      color: Colors.deepPurple, // Base color to apply gradient
+                  // Logo at the top with scale animation
+                  ScaleTransition(
+                    scale: _scaleAnimation,
+                    child: ShaderMask(
+                      shaderCallback: (bounds) => const LinearGradient(
+                        colors: [Colors.teal, Colors.cyan],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ).createShader(bounds),
+                      child: const Icon(
+                        Icons.person_search_rounded,
+                        size: 150,
+                        color: Colors.white, // Base color to apply gradient
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -114,28 +126,7 @@ class _SplashScreenState extends State<SplashScreen>
                         position: _slideAnimationLeft,
                         child: FadeTransition(
                           opacity: _fadeAnimation,
-                          child: Container(
-                            width: 100,
-                            height: 100,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                  color: Colors.blueAccent, width: 4),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.blueAccent.withOpacity(0.5),
-                                  blurRadius: 8,
-                                  offset: const Offset(2, 4),
-                                ),
-                              ],
-                            ),
-                            child: ClipOval(
-                              child: Image.asset(
-                                'assets/images/male.png',
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
+                          child: _buildGenderImage('male'),
                         ),
                       ),
                       const SizedBox(width: 20),
@@ -144,28 +135,7 @@ class _SplashScreenState extends State<SplashScreen>
                         position: _slideAnimationRight,
                         child: FadeTransition(
                           opacity: _fadeAnimation,
-                          child: Container(
-                            width: 100,
-                            height: 100,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                  color: Colors.pinkAccent, width: 4),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.pinkAccent.withOpacity(0.5),
-                                  blurRadius: 8,
-                                  offset: const Offset(2, 4),
-                                ),
-                              ],
-                            ),
-                            child: ClipOval(
-                              child: Image.asset(
-                                'assets/images/female.png',
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
+                          child: _buildGenderImage('female'),
                         ),
                       ),
                     ],
@@ -179,19 +149,18 @@ class _SplashScreenState extends State<SplashScreen>
                         opacity: _fadeAnimation.value,
                         child: ShaderMask(
                           shaderCallback: (bounds) => const LinearGradient(
-                            colors: [Colors.blueAccent, Colors.purpleAccent],
+                            colors: [Colors.teal, Colors.cyan],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ).createShader(bounds),
-                          child: Text(
+                          child: const Text(
                             'Gender Genie',
                             style: TextStyle(
                               fontSize: 36,
                               fontWeight: FontWeight.bold,
-                              color: Colors
-                                  .blue.shade900, // Base color for gradient
+                              color: Colors.white, // Base color for gradient
                               letterSpacing: 2,
-                              shadows: const [
+                              shadows: [
                                 Shadow(
                                   color: Colors.black26,
                                   blurRadius: 4,
@@ -204,24 +173,6 @@ class _SplashScreenState extends State<SplashScreen>
                       );
                     },
                   ),
-                  const SizedBox(height: 50),
-                  // Fancy Gradient Animated Progress Indicator
-                  SizedBox(
-                    width: 60,
-                    height: 60,
-                    child: ShaderMask(
-                      shaderCallback: (bounds) => const LinearGradient(
-                        colors: [Colors.blueAccent, Colors.teal],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ).createShader(bounds),
-                      child: const CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.deepPurpleAccent),
-                        strokeWidth: 6.0,
-                      ),
-                    ),
-                  ),
                   const SizedBox(height: 20),
                   // Animated "Please wait..." Gradient Text
                   AnimatedBuilder(
@@ -231,18 +182,14 @@ class _SplashScreenState extends State<SplashScreen>
                         opacity: _fadeAnimation.value,
                         child: ShaderMask(
                           shaderCallback: (bounds) => const LinearGradient(
-                            colors: [
-                              Colors.deepPurpleAccent,
-                              Colors.blueAccent
-                            ],
+                            colors: [Colors.teal, Colors.cyan],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                           ).createShader(bounds),
-                          child: Text(
-                            'Please wait...',
+                          child: const Text(
+                            'Loading...',
                             style: TextStyle(
-                              color: Colors
-                                  .blue.shade900, // Base color for gradient
+                              color: Colors.white, // Base color for gradient
                               fontSize: 16,
                               fontWeight: FontWeight.w300,
                               letterSpacing: 1.2,
@@ -257,6 +204,34 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildGenderImage(String gender) {
+    return Container(
+      width: 100,
+      height: 100,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: gender == 'male' ? Colors.blueAccent : Colors.pinkAccent,
+          width: 4,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (gender == 'male' ? Colors.blueAccent : Colors.pinkAccent)
+                .withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(2, 4),
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: Image.asset(
+          'assets/images/$gender.png',
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }
