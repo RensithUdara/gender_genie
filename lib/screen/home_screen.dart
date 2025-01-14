@@ -1,33 +1,8 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart'; // Import provider package
+import 'package:provider/provider.dart';
 
-void main() {
-  runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeNotifier(),
-      child: const MyApp(),
-    ),
-  );
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final themeNotifier = Provider.of<ThemeNotifier>(context);
-    return MaterialApp(
-      theme: themeNotifier.isDarkMode ? ThemeData.dark() : ThemeData.light(),
-      home: const HomeScreen(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-// ThemeNotifier to manage theme state
 class ThemeNotifier extends ChangeNotifier {
   bool _isDarkMode = false;
 
@@ -49,74 +24,20 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   final TextEditingController _nameController = TextEditingController();
-
   String result = 'none';
   String imageResult = 'none';
-  bool isVisible = false;
   bool isLoading = false;
 
   late AnimationController _controller;
   late Animation<double> _curvedAnimation;
 
-  predictGender(String name) async {
-    setState(() {
-      isLoading = true;
-    });
-
-    var url = Uri.parse('https://api.genderize.io/?name=$name');
-    var response = await http.get(url);
-    var body = json.decode(response.body);
-
-    setState(() {
-      result = body['gender'] != null
-          ? 'Gender: ${body['gender']}'
-          : 'Gender could not be predicted';
-      imageResult = body['gender'] ?? 'both'; // Use 'both' to show both images
-      isVisible = true;
-      isLoading = false;
-      _controller.forward(from: 0);
-    });
-  }
-
-  LinearGradient getGradient(BuildContext context) {
-    final themeNotifier = Provider.of<ThemeNotifier>(context);
-    if (themeNotifier.isDarkMode) {
-      // Different gradient for dark mode
-      return LinearGradient(
-        colors: [Colors.grey.shade800, Colors.black87],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      );
-    } else if (imageResult == 'male') {
-      return LinearGradient(
-        colors: [Colors.lightBlueAccent, Colors.blueAccent.shade200],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      );
-    } else if (imageResult == 'female') {
-      return LinearGradient(
-        colors: [Colors.pinkAccent.shade100, Colors.pinkAccent.shade200],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      );
-    }
-    return LinearGradient(
-      colors: [Colors.teal.shade600, Colors.cyan.shade400],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    );
-  }
-
   @override
   void initState() {
     super.initState();
-
     _controller = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-
-    // Applying a different curve to your animation
     _curvedAnimation = CurvedAnimation(
       parent: _controller,
       curve: Curves.easeInOut,
@@ -130,332 +51,317 @@ class _HomeScreenState extends State<HomeScreen>
     super.dispose();
   }
 
+  Future<void> predictGender(String name) async {
+    if (name.isEmpty) return;
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      var url = Uri.parse('https://api.genderize.io/?name=$name');
+      var response = await http.get(url);
+      var body = json.decode(response.body);
+
+      setState(() {
+        result = body['gender'] != null
+            ? 'Gender: ${body['gender']}'
+            : 'Gender could not be predicted';
+        imageResult = body['gender'] ?? 'both';
+        isLoading = false;
+        _controller.forward(from: 0);
+      });
+    } catch (e) {
+      setState(() {
+        result = 'Error: Failed to fetch data';
+        isLoading = false;
+      });
+    }
+  }
+
+  Color _getBackgroundColor(BuildContext context) {
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    if (themeNotifier.isDarkMode) {
+      return Colors.grey.shade900;
+    } else if (imageResult == 'male') {
+      return Colors.blue.shade100;
+    } else if (imageResult == 'female') {
+      return Colors.pink.shade100;
+    }
+    return Colors.teal.shade50;
+  }
+
+  LinearGradient _getAppBarGradient(BuildContext context) {
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    if (themeNotifier.isDarkMode) {
+      return LinearGradient(
+        colors: [Colors.grey.shade800, Colors.black87],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    } else if (imageResult == 'male') {
+      return LinearGradient(
+        colors: [Colors.blue.shade400, Colors.blue.shade700],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    } else if (imageResult == 'female') {
+      return LinearGradient(
+        colors: [Colors.pink.shade300, Colors.pink.shade600],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    }
+    return LinearGradient(
+      colors: [Colors.teal.shade400, Colors.teal.shade700],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeNotifier = Provider.of<ThemeNotifier>(context);
+    final isDarkMode = themeNotifier.isDarkMode;
 
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: themeNotifier.isDarkMode ? Colors.black : Colors.white,
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(70),
-          child: AppBar(
-            automaticallyImplyLeading: false,
-            flexibleSpace: Container(
-              decoration: BoxDecoration(
-                gradient: getGradient(context),
-              ),
+    return Scaffold(
+      backgroundColor: _getBackgroundColor(context),
+      appBar: AppBar(
+        title: const Text(
+          'Gender Genie',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+            color: Colors.white,
+          ),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: _getAppBarGradient(context),
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              isDarkMode ? Icons.light_mode : Icons.dark_mode,
+              color: Colors.white,
             ),
-            elevation: 10,
-            shadowColor: Colors.teal.shade200,
-            title: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.person_search_rounded,
-                  color: Colors.white,
-                  size: 30,
+            onPressed: () {
+              themeNotifier.toggleTheme();
+            },
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
+              Text(
+                'Enter a Name to Predict Gender',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: isDarkMode ? Colors.white : Colors.black87,
                 ),
-                SizedBox(width: 10),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              _buildInputField(isDarkMode),
+              const SizedBox(height: 20),
+              _buildPredictButton(),
+              const SizedBox(height: 30),
+              if (isLoading)
+                const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.teal),
+                )
+              else if (_nameController.text.isEmpty)
                 Text(
-                  'Gender Genie',
+                  'Please enter a name.',
                   style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 22,
-                    color: Colors.white,
-                    letterSpacing: 1.2,
-                    fontFamily: 'Roboto',
+                    fontSize: 16,
+                    color: Colors.red.shade400,
                   ),
-                ),
-              ],
-            ),
-            centerTitle: true,
-            actions: [
-              IconButton(
-                icon: Icon(
-                  themeNotifier.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                  color: Colors.white,
-                ),
-                onPressed: () {
-                  themeNotifier.toggleTheme();
-                },
-              ),
+                )
+              else
+                _buildResultSection(isDarkMode),
+              const SizedBox(height: 20),
             ],
           ),
         ),
-        body: Stack(
-          children: [
-            // Background Gradient
-            Container(
-              decoration: BoxDecoration(
-                gradient: getGradient(context),
+      ),
+    );
+  }
+
+  Widget _buildInputField(bool isDarkMode) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: isDarkMode ? Colors.grey.shade800 : Colors.white,
+        borderRadius: BorderRadius.circular(25), // More rounded corners
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _nameController,
+              style: TextStyle(
+                color: isDarkMode ? Colors.white : Colors.black87,
+                fontSize: 16, // Larger font size
+              ),
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: 'Enter a name',
+                hintStyle: TextStyle(
+                  color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600,
+                  fontSize: 16, // Larger font size
+                ),
+                prefixIcon: Icon(
+                  Icons.search, // Changed to search icon
+                  color: isDarkMode ? Colors.teal.shade200 : Colors.teal.shade700,
+                ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return SingleChildScrollView(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: constraints.maxHeight,
-                      ),
-                      child: IntrinsicHeight(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'Enter a Name to Predict Gender',
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                                fontFamily: 'Roboto',
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 20),
-                            // Input Field Container
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 8, horizontal: 20),
-                              margin:
-                                  const EdgeInsets.symmetric(horizontal: 10),
-                              decoration: BoxDecoration(
-                                color: themeNotifier.isDarkMode
-                                    ? Colors.grey.shade800.withOpacity(0.8)
-                                    : Colors.white.withOpacity(0.9),
-                                borderRadius: BorderRadius.circular(15),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Colors.black12,
-                                    blurRadius: 12,
-                                    offset: Offset(
-                                        0, 6), // Controls shadow positioning
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: TextField(
-                                      controller: _nameController,
-                                      maxLength: 15,
-                                      style:
-                                          const TextStyle(color: Colors.black),
-                                      decoration: InputDecoration(
-                                        border: InputBorder.none,
-                                        counterText: '',
-                                        hintText: 'Enter a name',
-                                        hintStyle: TextStyle(
-                                            color: Colors.grey.shade500),
-                                        prefixIcon: const Icon(Icons.person,
-                                            color: Colors.teal),
-                                      ),
-                                    ),
-                                  ),
-                                  IconButton(
-                                    icon: Icon(Icons.clear,
-                                        color: Colors.teal.shade700),
-                                    onPressed: () {
-                                      _nameController.clear();
-                                      setState(() {
-                                        result = 'none';
-                                        imageResult = 'none';
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            ElevatedButton(
-                              onPressed: () =>
-                                  predictGender(_nameController.text),
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors.teal.shade700,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                      20), // More rounded corners
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 40, vertical: 16),
-                                elevation: 8, // Enhanced shadow effect
-                              ),
-                              child: const Text(
-                                'Predict',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 30),
-                            // Show loading indicator if fetching data
-                            if (isLoading)
-                              const CircularProgressIndicator(
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
-                              )
-                            else
-                              AnimatedOpacity(
-                                opacity: _nameController.text.isEmpty ? 0 : 1,
-                                duration: const Duration(milliseconds: 600),
-                                child: _nameController.text.isEmpty
-                                    ? const Text(
-                                        'Please enter a name.',
-                                        style: TextStyle(
-                                            fontSize: 16, color: Colors.red),
-                                      )
-                                    : SlideTransition(
-                                        position: Tween<Offset>(
-                                          begin: const Offset(0, 1),
-                                          end: const Offset(0, 0),
-                                        ).animate(_curvedAnimation),
-                                        child: ScaleTransition(
-                                          scale: _curvedAnimation,
-                                          child: FadeTransition(
-                                            opacity: _curvedAnimation,
-                                            child: Column(
-                                              children: [
-                                                Text(
-                                                  result,
-                                                  style: const TextStyle(
-                                                    fontSize: 22,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors.teal,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 20),
-                                                if (imageResult == 'both')
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Container(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(4),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          shape:
-                                                              BoxShape.circle,
-                                                          border: Border.all(
-                                                            color: Colors
-                                                                .teal.shade700,
-                                                            width: 4,
-                                                          ),
-                                                        ),
-                                                        child: ClipOval(
-                                                          child: Image.asset(
-                                                            'assets/images/male.png',
-                                                            width: 100,
-                                                            height: 100,
-                                                            fit: BoxFit.cover,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      const SizedBox(width: 20),
-                                                      Container(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(4),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          shape:
-                                                              BoxShape.circle,
-                                                          border: Border.all(
-                                                            color: Colors
-                                                                .pinkAccent
-                                                                .shade200,
-                                                            width: 4,
-                                                          ),
-                                                        ),
-                                                        child: ClipOval(
-                                                          child: Image.asset(
-                                                            'assets/images/female.png',
-                                                            width: 100,
-                                                            height: 100,
-                                                            fit: BoxFit.cover,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  )
-                                                else if (imageResult == 'male')
-                                                  Container(
-                                                    padding:
-                                                        const EdgeInsets.all(4),
-                                                    decoration: BoxDecoration(
-                                                      shape: BoxShape.circle,
-                                                      border: Border.all(
-                                                        color: Colors
-                                                            .teal.shade700,
-                                                        width: 4,
-                                                      ),
-                                                    ),
-                                                    child: ClipOval(
-                                                      child: Image.asset(
-                                                        'assets/images/male.png',
-                                                        width: 150,
-                                                        height: 150,
-                                                        fit: BoxFit.cover,
-                                                      ),
-                                                    ),
-                                                  )
-                                                else if (imageResult ==
-                                                    'female')
-                                                  Container(
-                                                    padding:
-                                                        const EdgeInsets.all(4),
-                                                    decoration: BoxDecoration(
-                                                      shape: BoxShape.circle,
-                                                      border: Border.all(
-                                                        color: Colors.pinkAccent
-                                                            .shade200,
-                                                        width: 4,
-                                                      ),
-                                                    ),
-                                                    child: ClipOval(
-                                                      child: Image.asset(
-                                                        'assets/images/female.png',
-                                                        width: 150,
-                                                        height: 150,
-                                                        fit: BoxFit.cover,
-                                                      ),
-                                                    ),
-                                                  ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                              ),
-                            const Spacer(),
-                            // Footer Text or any additional information
-                            const Padding(
-                              padding: EdgeInsets.only(bottom: 10),
-                              child: Text(
-                                'Created by Rensith Udara ❤️',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white70,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.clear,
+              color: isDarkMode ? Colors.teal.shade200 : Colors.teal.shade700,
             ),
-          ],
+            onPressed: () {
+              _nameController.clear();
+              setState(() {
+                result = 'none';
+                imageResult = 'none';
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPredictButton() {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.teal.shade400, Colors.teal.shade700],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(25), // More rounded corners
+        boxShadow: [
+          BoxShadow(
+            color: Colors.teal.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: () => predictGender(_nameController.text),
+        style: ElevatedButton.styleFrom(
+          foregroundColor: Colors.white,
+          backgroundColor: Colors.transparent,
+          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25), // More rounded corners
+          ),
+          elevation: 0,
+        ),
+        child: const Text(
+          'Predict',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResultSection(bool isDarkMode) {
+    return AnimatedBuilder(
+      animation: _curvedAnimation,
+      builder: (context, child) {
+        return Opacity(
+          opacity: _curvedAnimation.value,
+          child: Transform.scale(
+            scale: _curvedAnimation.value,
+            child: Column(
+              children: [
+                Text(
+                  result,
+                  style: TextStyle(
+                    fontSize: 24, // Larger font size
+                    fontWeight: FontWeight.bold,
+                    color: isDarkMode ? Colors.white : Colors.teal.shade700,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 4,
+                        offset: const Offset(2, 2),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                if (imageResult == 'both')
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildGenderImage('male', isDarkMode),
+                      const SizedBox(width: 20),
+                      _buildGenderImage('female', isDarkMode),
+                    ],
+                  )
+                else
+                  _buildGenderImage(imageResult, isDarkMode),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildGenderImage(String gender, bool isDarkMode) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: gender == 'male'
+              ? Colors.blueAccent.shade200
+              : Colors.pinkAccent.shade200,
+          width: 4,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: Image.asset(
+          'assets/images/$gender.png',
+          width: 100,
+          height: 100,
+          fit: BoxFit.cover,
         ),
       ),
     );
