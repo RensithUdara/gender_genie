@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
+
 class ThemeNotifier extends ChangeNotifier {
   bool _isDarkMode = false;
 
@@ -190,6 +191,13 @@ class _HomeScreenState extends State<HomeScreen>
               else
                 _buildResultSection(isDarkMode),
               const SizedBox(height: 20),
+              // Text(
+              //   'Created by Rensith Udara ❤️',
+              //   style: TextStyle(
+              //     fontSize: 14,
+              //     color: isDarkMode ? Colors.white70 : Colors.grey.shade600,
+              //   ),
+              // ),
             ],
           ),
         ),
@@ -202,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen>
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: isDarkMode ? Colors.grey.shade800 : Colors.white,
-        borderRadius: BorderRadius.circular(25), // More rounded corners
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -218,17 +226,15 @@ class _HomeScreenState extends State<HomeScreen>
               controller: _nameController,
               style: TextStyle(
                 color: isDarkMode ? Colors.white : Colors.black87,
-                fontSize: 16, // Larger font size
               ),
               decoration: InputDecoration(
                 border: InputBorder.none,
                 hintText: 'Enter a name',
                 hintStyle: TextStyle(
                   color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600,
-                  fontSize: 16, // Larger font size
                 ),
                 prefixIcon: Icon(
-                  Icons.search, // Changed to search icon
+                  Icons.person,
                   color: isDarkMode ? Colors.teal.shade200 : Colors.teal.shade700,
                 ),
               ),
@@ -261,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(25), // More rounded corners
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.teal.withOpacity(0.3),
@@ -277,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen>
           backgroundColor: Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25), // More rounded corners
+            borderRadius: BorderRadius.circular(12),
           ),
           elevation: 0,
         ),
@@ -305,16 +311,9 @@ class _HomeScreenState extends State<HomeScreen>
                 Text(
                   result,
                   style: TextStyle(
-                    fontSize: 24, // Larger font size
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: isDarkMode ? Colors.white : Colors.teal.shade700,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 4,
-                        offset: const Offset(2, 2),
-                      ),
-                    ],
                   ),
                 ),
                 const SizedBox(height: 20),

@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           theme:
               themeNotifier.isDarkMode ? ThemeData.dark() : ThemeData.light(),
-          home:  SplashScreen(), // Start with the SplashScreen
+          home: const SplashScreen(), // Start with the SplashScreen
           debugShowCheckedModeBanner: false,
         );
       },
