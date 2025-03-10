@@ -1,4 +1,4 @@
-# gender_predictor
+# gender_genie
 
 A new Flutter project.
 
