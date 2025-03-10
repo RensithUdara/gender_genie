@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gender_predictor/screen/home_screen.dart';
-import 'package:gender_predictor/screen/splash_screen.dart';
+import 'package:gender_genie/screen/home_screen.dart';
+import 'package:gender_genie/screen/splash_screen.dart';
 import 'package:provider/provider.dart';
 
 void main() {
