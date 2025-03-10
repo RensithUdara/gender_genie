@@ -1,6 +1,6 @@
 {
-    "name": "gender_predictor",
-    "short_name": "gender_predictor",
+    "name": "gender_genie",
+    "short_name": "gender_genie",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
